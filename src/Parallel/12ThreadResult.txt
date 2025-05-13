@@ -1,0 +1,43 @@
+Start time: 2025-05-12T21:17:46.425272370
+Parallel with
+ cities: [50, 75, 100, 150, 200]
+Length: 226.0 Naive Solution: 2701 - Warm up
+Length: 176.0 Naive Solution: 2516 - Global time: 1050 ms
+Length: 236.0 Naive Solution: 2748 - Global time: 1036 ms
+Length: 257.0 Naive Solution: 2629 - Global time: 1025 ms
+Length: 290.0 Naive Solution: 2271 - Global time: 1091 ms
+Length: 216.0 Naive Solution: 2649 - Global time: 1041 ms
+Cities: 50, threads: 12, avg Time: 1048, cycles: 20,
+
+Length: 254.0 Naive Solution: 3539 - Warm up
+Length: 281.0 Naive Solution: 4178 - Global time: 3204 ms
+Length: 274.0 Naive Solution: 3820 - Global time: 3111 ms
+Length: 294.0 Naive Solution: 3900 - Global time: 3135 ms
+Length: 262.0 Naive Solution: 3924 - Global time: 3149 ms
+Length: 300.0 Naive Solution: 3713 - Global time: 3135 ms
+Cities: 75, threads: 12, avg Time: 3146, cycles: 20,
+
+Length: 277.0 Naive Solution: 5022 - Warm up
+Length: 288.0 Naive Solution: 5241 - Global time: 7210 ms
+Length: 258.0 Naive Solution: 5004 - Global time: 7197 ms
+Length: 292.0 Naive Solution: 5533 - Global time: 7199 ms
+Length: 275.0 Naive Solution: 5097 - Global time: 7191 ms
+Length: 272.0 Naive Solution: 4447 - Global time: 7199 ms
+Cities: 100, threads: 12, avg Time: 7199, cycles: 20,
+
+Length: 341.0 Naive Solution: 7323 - Warm up
+Length: 325.0 Naive Solution: 7333 - Global time: 22746 ms
+Length: 355.0 Naive Solution: 7091 - Global time: 22893 ms
+Length: 361.0 Naive Solution: 7312 - Global time: 22827 ms
+Length: 340.0 Naive Solution: 7128 - Global time: 22946 ms
+Length: 332.0 Naive Solution: 7673 - Global time: 22783 ms
+Cities: 150, threads: 12, avg Time: 22839, cycles: 20,
+
+Length: 388.0 Naive Solution: 10147 - Warm up
+Length: 376.0 Naive Solution: 10783 - Global time: 53685 ms
+Length: 372.0 Naive Solution: 10116 - Global time: 54027 ms
+Length: 374.0 Naive Solution: 9709 - Global time: 53772 ms
+Length: 376.0 Naive Solution: 9653 - Global time: 53810 ms
+Length: 381.0 Naive Solution: 9607 - Global time: 53822 ms
+Cities: 200, threads: 12, avg Time: 53823, cycles: 20,
+End time:2025-05-12T21:26:34.857014586

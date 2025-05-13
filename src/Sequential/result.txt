@@ -1,0 +1,34 @@
+Start time:2025-05-12T19:07:10.356924857
+Sequential with
+ cities: [50, 75, 100, 150, 200]
+Length: 222.0 Naive Solution: 2336 Global time: 6515 ms
+Length: 179.0 Naive Solution: 2799 Global time: 5897 ms
+Length: 236.0 Naive Solution: 2339 Global time: 5893 ms
+Length: 241.0 Naive Solution: 1870 Global time: 5902 ms
+Length: 249.0 Naive Solution: 2303 Global time: 5927 ms
+Cities: 50, avg Time: 6026, cycles: 20,
+Length: 273.0 Naive Solution: 3559 Global time: 20786 ms
+Length: 248.0 Naive Solution: 3683 Global time: 20119 ms
+Length: 285.0 Naive Solution: 3659 Global time: 20171 ms
+Length: 256.0 Naive Solution: 3785 Global time: 20121 ms
+Length: 254.0 Naive Solution: 3679 Global time: 20212 ms
+Cities: 75, avg Time: 20281, cycles: 20,
+Length: 281.0 Naive Solution: 5339 Global time: 47824 ms
+Length: 292.0 Naive Solution: 5049 Global time: 47975 ms
+Length: 288.0 Naive Solution: 5088 Global time: 47884 ms
+Length: 287.0 Naive Solution: 5304 Global time: 47885 ms
+Length: 295.0 Naive Solution: 5057 Global time: 47865 ms
+Cities: 100, avg Time: 47886, cycles: 20,
+Length: 352.0 Naive Solution: 7339 Global time: 162566 ms
+Length: 321.0 Naive Solution: 7245 Global time: 162395 ms
+Length: 365.0 Naive Solution: 7900 Global time: 162296 ms
+Length: 347.0 Naive Solution: 7226 Global time: 162420 ms
+Length: 379.0 Naive Solution: 8027 Global time: 162326 ms
+Cities: 150, avg Time: 162400, cycles: 20,
+Length: 367.0 Naive Solution: 9953 Global time: 385627 ms
+Length: 385.0 Naive Solution: 9896 Global time: 386146 ms
+Length: 406.0 Naive Solution: 10163 Global time: 386836 ms
+Length: 373.0 Naive Solution: 9018 Global time: 385947 ms
+Length: 369.0 Naive Solution: 10153 Global time: 385690 ms
+Cities: 200, avg Time: 386049, cycles: 20,
+End time:2025-05-12T19:59:03.596970031
