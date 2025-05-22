@@ -64,24 +64,19 @@ public class AntColonyOptimization {
     private void solve()  {
         resetAnts();
         clearTrails();
+        int barrierParties = numberOfThreads;
 
         // create tasks
+        CyclicBarrier barrier = new CyclicBarrier(barrierParties, updateTrailsAndBest());
+        List<AntsRunner> tasks = createTasks(barrier, numberOfThreads);
+
+        // create ES
         ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);
-        CyclicBarrier barrier = new CyclicBarrier(numberOfThreads, updateTrailsAndBest());
+
+        // load tasks
         List<Future<?>> futures = new ArrayList<>();
-
-        int defaultAntsPerThread = numberOfAnts / numberOfThreads;
-        int remainder = numberOfAnts % numberOfThreads;
-        int antsOffset = 0;
-
-        for (int i = 0; i < numberOfThreads; i++) {
-            int antsPerThread = defaultAntsPerThread + (i < remainder ? 1 : 0);
-            int finalAntsOffset = antsOffset;
-
-            AntsRunner antsRunner = new AntsRunner(barrier, antsPerThread, finalAntsOffset);
-            futures.add(executorService.submit(antsRunner));
-
-            antsOffset += antsPerThread;
+        for(AntsRunner task : tasks) {
+            futures.add(executorService.submit(task));
         }
 
         for (Future<?> future : futures) {
@@ -95,8 +90,25 @@ public class AntColonyOptimization {
         // shutdown
         shutdownAndAwaitTermination(executorService);
 
-        System.out.println("\nBest tour length: " + bestTourLength);
-        System.out.println("\nBest tour order: " + Arrays.toString(bestTourOrder));
+//        System.out.println("\nBest tour length: " + bestTourLength);
+//        System.out.println("\nBest tour order: " + Arrays.toString(bestTourOrder));
+    }
+
+    private List<AntsRunner> createTasks(CyclicBarrier barrier, int numberOfThreads) {
+        List<AntsRunner> tasks = new ArrayList<>();
+        int defaultAntsPerThread = numberOfAnts / numberOfThreads;
+        int remainder = numberOfAnts % numberOfThreads;
+        int antsOffset = 0;
+
+        for(int i = 0; i < numberOfThreads; i++) {
+            int antsPerThread = defaultAntsPerThread + (i < remainder ? 1 : 0);
+            AntsRunner antsRunner = new AntsRunner(barrier, antsPerThread, antsOffset);
+            tasks.add(antsRunner);
+
+            antsOffset += antsPerThread;
+        }
+
+        return tasks;
     }
 
     private Runnable updateTrailsAndBest(){
@@ -124,7 +136,7 @@ public class AntColonyOptimization {
     public void startAntOptimization() {
         int attempts = 5;
         for (int i = 0; i < attempts; i++) {
-            System.out.println("Attempt #" + (i+1));
+//            System.out.println("Attempt #" + (i+1));
             solve();
 
         }
@@ -277,7 +289,7 @@ public class AntColonyOptimization {
             throw new RuntimeException("There are no other cities");
         }
 
-        private synchronized void calculateProbabilities(Ant ant) {
+        private void calculateProbabilities(Ant ant) {
             int i = ant.getCurrentCity();
             double pheromone = 0.0;
             for (int j = 0; j < numberOfCities; j++) {

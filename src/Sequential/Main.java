@@ -7,18 +7,28 @@ import java.util.stream.LongStream;
 public class Main {
 
     public static void main(String[] args) {
-        seqBenchmark();
+        manualTesting(6);
     }
 
     public static void manualTesting(int noOfCities) {
-        AntColonyOptimization aco = new AntColonyOptimization(noOfCities);
+
+        int[][] graph = new int[][]{
+                // Mumbai, Delhi, Bengaluru, Chennai
+                {   0,   1400,     980,     1330 }, // Mumbai
+                {1400,      0,    2150,     2200 }, // Delhi
+                { 980,   2150,       0,      350 }, // Bengaluru
+                {1330,   2200,     350,        0 }  // Chennai
+        };
+
+        AntColonyOptimization aco = new AntColonyOptimization(4);
+        aco.setGraph(graph);
         int naive = aco.naiveSolution();
-//        aco.prettyPrint();
+        aco.prettyPrint();
         long startTime = System.currentTimeMillis();
         aco.startAntOptimization();
 
         System.out.println("Global time: " + (System.currentTimeMillis() - startTime) + " ms");
-        System.out.println("Naive solution: " + naive);
+//        System.out.println("Naive solution: " + naive);
     }
 
     public static void seqBenchmark() {

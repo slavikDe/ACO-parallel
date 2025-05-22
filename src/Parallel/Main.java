@@ -6,8 +6,7 @@ import java.util.stream.LongStream;
 
 public class Main {
     public static void main(String[] args) {
-        manualTesting(50);
-
+        parallelBenchmark();
     }
 
     public static void manualTesting(int noOfCities) {
@@ -18,22 +17,20 @@ public class Main {
         long startTime = System.currentTimeMillis();
         aco.startAntOptimization();
 
-
         System.out.println("Global time: " + (System.currentTimeMillis() - startTime) + " ms");
-
         System.out.println("Naive solution: " + naive);
     }
 
     public static void parallelBenchmark() {
-        int threadsCount = 12;
+        int threadsCount = 20;
 
         int [] citySizes = {50, 75, 100, 150, 200};
 
-        int cycles = 5  + 1;
+        int cycles = 20;
 
         long[] results = new long[cycles];
         System.out.println("Start time: " + LocalDateTime.now());
-        System.out.print("Parallel with \n cities: " + Arrays.toString(citySizes));
+        System.out.print("Parallel with \n cities: " + Arrays.toString(citySizes) +'\n');
         for (int noOfCities : citySizes) {
             for (int i = 0; i < cycles; i++) {
                 AntColonyOptimization aco = new AntColonyOptimization(noOfCities);
@@ -46,7 +43,7 @@ public class Main {
 
                 if (i > 0){
                     results[i - 1] = result;
-                    System.out.print("- Global time: " + result + " ms");
+                    System.out.print("\n- Global time: " + result + " ms");
                 }
                 else System.out.print("- Warm up");
 
