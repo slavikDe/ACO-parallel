@@ -25,7 +25,7 @@ public class AntColonyOptimization {
     private double evaporation = 0.5;
     private double Q = 100.0 * 5;
     private double randomFactor = 0.01;
-    private int maxIterations = 300;
+    private int maxIterations = 30;
 
     private int noOfCities;
     private int[][] graph;
@@ -36,7 +36,7 @@ public class AntColonyOptimization {
     private int currentIndex;
 
     private int[] bestTourOrder;
-    private double bestTourLength = Double.MAX_VALUE;
+    private double bestTourLength;
 
     public AntColonyOptimization(int noOfCities) {
         initializeParams(noOfCities);
@@ -80,8 +80,12 @@ public class AntColonyOptimization {
         int attempts = 5;
 
         for (int i = 0; i < attempts; i++) {
+            System.out.println("Ant optimization attempt #" + (i + 1));
             solve();
+//            System.out.println("Attempt #" + (i + 1) + " result: " + bestTourLength);
+//            System.out.println("Best Tour Order: " + Arrays.toString(bestTourOrder) + "\n");
         }
+
         System.out.print("Length: " + bestTourLength + " Naive Solution: " + IntStream.of(graph[0]).sum() + " ");
     }
 
@@ -99,10 +103,11 @@ public class AntColonyOptimization {
             moveAnts();
             updateTrails();
             updateBest();
+            if(i % 10 == 0){
+                System.out.println("Best tour length: " + bestTourLength);
+                System.out.println("Best tour order: " + Arrays.toString(bestTourOrder) + '\n');
+            }
         }
-
-//         System.out.println("\nBest tour length: " + bestTourLength);
-//         System.out.println("\nBest tour order: " + Arrays.toString(bestTourOrder));
     }
 
     private void resetAnts() {
@@ -204,6 +209,10 @@ public class AntColonyOptimization {
                 probabilities[j] = numerator / pheromone;
             }
         }
+    }
+
+    public void setGraph(int[][] graph) {
+        this.graph = graph;
     }
 
     public void prettyPrint() {
