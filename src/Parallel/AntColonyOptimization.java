@@ -67,6 +67,7 @@ public class AntColonyOptimization {
     private void solve()  {
         resetAnts();
         clearTrails();
+        int barrierParties = numberOfThreads;
 
         // create tasks
 //        CyclicBarrier barrier = new CyclicBarrier(numberOfAnts, updateTrailsAndBest());
@@ -100,8 +101,8 @@ public class AntColonyOptimization {
         // shutdown
         shutdownAndAwaitTermination(executorService);
 
-       System.out.println("\nBest tour length: " + bestTourLength);
-        System.out.println("\nBest tour order: " + Arrays.toString(bestTourOrder));
+//        System.out.println("\nBest tour length: " + bestTourLength);
+//        System.out.println("\nBest tour order: " + Arrays.toString(bestTourOrder));
     }
 
     private List<AntWorker> createTasks() {
@@ -138,7 +139,7 @@ public class AntColonyOptimization {
     public void startAntOptimization() {
         int attempts = 5;
         for (int i = 0; i < attempts; i++) {
-            System.out.println("Attempt #" + (i+1));
+//            System.out.println("Attempt #" + (i+1));
             solve();
 
         }
