@@ -2,6 +2,7 @@ package Parallel;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.IntStream;
 
 public class AntColonyOptimization {
@@ -17,7 +18,7 @@ public class AntColonyOptimization {
      * private int maxIterations = 1000;
      */
 
-    public final Random random = new Random();
+//    public final Random random = new Random();
     private double c = 1.0;
     private double alpha = 1;
     private double beta = 5;
@@ -35,6 +36,7 @@ public class AntColonyOptimization {
     private double bestTourLength ;
 
     private int numberOfThreads = 2; // default min value
+    private final ReentrantLock lock = new ReentrantLock();
 
     public AntColonyOptimization(int noOfCities) {
         initializeParams(noOfCities);
@@ -49,6 +51,7 @@ public class AntColonyOptimization {
         randomFactor = rf;
         maxIterations = iter;
         initializeParams(noOfCities);
+
     }
 
     private void initializeParams(int noOfCities) {
@@ -64,48 +67,47 @@ public class AntColonyOptimization {
     private void solve()  {
         resetAnts();
         clearTrails();
-        int barrierParties = numberOfThreads;
 
         // create tasks
-        CyclicBarrier barrier = new CyclicBarrier(barrierParties, updateTrailsAndBest());
-        List<AntsRunner> tasks = createTasks(barrier, numberOfThreads);
+//        CyclicBarrier barrier = new CyclicBarrier(numberOfAnts, updateTrailsAndBest());
+        List<AntWorker> tasks = createTasks();
 
         // create ES
         ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);
 
         // load tasks
-        List<Future<?>> futures = new ArrayList<>();
-        for(AntsRunner task : tasks) {
-            futures.add(executorService.submit(task));
-        }
-
-        for (Future<?> future : futures) {
-            try {
-                future.get();
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
+        for(int iteration = 0; iteration < maxIterations; iteration++) {
+            List<Future<?>> futures = new ArrayList<>();
+            for(AntWorker task : tasks) {
+               futures.add(executorService.submit(task));
             }
-        }
+
+            for (Future<?> future : futures) {
+                try {
+                    future.get();
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                }
+            }
+            updateTrails();
+            updateBest();
+
+            if (iteration < maxIterations - 1) {
+                resetAnts();
+            }
+       }
 
         // shutdown
         shutdownAndAwaitTermination(executorService);
 
-//        System.out.println("\nBest tour length: " + bestTourLength);
-//        System.out.println("\nBest tour order: " + Arrays.toString(bestTourOrder));
+       System.out.println("\nBest tour length: " + bestTourLength);
+        System.out.println("\nBest tour order: " + Arrays.toString(bestTourOrder));
     }
 
-    private List<AntsRunner> createTasks(CyclicBarrier barrier, int numberOfThreads) {
-        List<AntsRunner> tasks = new ArrayList<>();
-        int defaultAntsPerThread = numberOfAnts / numberOfThreads;
-        int remainder = numberOfAnts % numberOfThreads;
-        int antsOffset = 0;
-
-        for(int i = 0; i < numberOfThreads; i++) {
-            int antsPerThread = defaultAntsPerThread + (i < remainder ? 1 : 0);
-            AntsRunner antsRunner = new AntsRunner(barrier, antsPerThread, antsOffset);
-            tasks.add(antsRunner);
-
-            antsOffset += antsPerThread;
+    private List<AntWorker> createTasks() {
+        List<AntWorker> tasks = new ArrayList<>();
+        for(int i = 0; i < numberOfAnts; i++) {
+            tasks.add(new AntWorker(ants.get(i)));
         }
 
         return tasks;
@@ -136,11 +138,11 @@ public class AntColonyOptimization {
     public void startAntOptimization() {
         int attempts = 5;
         for (int i = 0; i < attempts; i++) {
-//            System.out.println("Attempt #" + (i+1));
+            System.out.println("Attempt #" + (i+1));
             solve();
 
         }
-//        System.out.print("\nLength: " + bestTourLength + " Naive Solution: " + IntStream.of(graph[0]).sum() + " ");
+        System.out.print("\nLength: " + bestTourLength + " Naive Solution: " + IntStream.of(graph[0]).sum() + " ");
     }
 
     private void clearTrails() {
@@ -201,6 +203,7 @@ public class AntColonyOptimization {
     }
 
     private int[][] generateRandomCity(int numberOfCities) {
+        Random random = new Random();
         int maxDistanceBetweenCities = 100;
         int[][] randomCity = new int[numberOfCities][numberOfCities];
 
@@ -217,66 +220,29 @@ public class AntColonyOptimization {
         return IntStream.of(graph[0]).sum();
     }
 
-    private class
-
-    AntsRunner implements Runnable {
-        private final CyclicBarrier barrier;
-        private final List<Ant> localAnts;
-        private final Random localRandom = new Random();
-        private final double[] localProbabilities;
-
-        AntsRunner(CyclicBarrier barrier, int antsPerThread, int antsOffset) {
-            this.localAnts = ants.subList(antsOffset, antsOffset + antsPerThread);
-            this.barrier = barrier;
-            this.localProbabilities = new double[numberOfCities];
-        }
-
-        @Override
-        public void run() {
-            for (int i = 0; i < maxIterations; i++) {
-                for(Ant ant : localAnts) {
-                    ant.clear();
-                    ant.setFirstCity(localRandom.nextInt(numberOfCities));
+    private  int selectNextCity(Ant ant) {
+        Random localRandom = new Random();
+        if (localRandom.nextDouble() < randomFactor) {
+            List<Integer> notVisitedCities = new ArrayList<>();
+            for (int i = 0; i < numberOfCities; i++) {
+                if (!ant.visited(i)) {
+                    notVisitedCities.add(i);
                 }
-
-                moveLocalAnts();
-                try {
-                    barrier.await();
-                } catch (InterruptedException | BrokenBarrierException e) {
-                    throw new RuntimeException(e);
-                }
+            }
+            if (!notVisitedCities.isEmpty()) {
+                int index = localRandom.nextInt(notVisitedCities.size());
+                return notVisitedCities.get(index);
             }
         }
 
-        private void moveLocalAnts() {
-            for(int i = 0; i < numberOfCities - 1; i++) {
-                for(Ant ant : localAnts) {
-                    int nextCity = selectNextCity(ant);
-                    ant.visitCity(nextCity);
-                }
-            }
-        }
-
-        private int selectNextCity(Ant ant) {
-            if (localRandom.nextDouble() < randomFactor) {
-                List<Integer> notVisitedCities = new ArrayList<>();
-                for (int i = 0; i < numberOfCities; i++) {
-                    if (!ant.visited(i)) {
-                        notVisitedCities.add(i);
-                    }
-                }
-                if (!notVisitedCities.isEmpty()) {
-                    int index = localRandom.nextInt(notVisitedCities.size());
-                    return notVisitedCities.get(index);
-                }
-            }
-
-            calculateProbabilities(ant);
-            double r = localRandom.nextDouble();
+        lock.lock();
+        try {
+            double[] probabilities = calculateProbabilities(ant);
+            double randomValue = localRandom.nextDouble();
             double total = 0;
             for (int i = 0; i < numberOfCities; i++) {
-                total += localProbabilities[i];
-                if (total >= r) {
+                total += probabilities[i];
+                if (total >= randomValue) {
                     return i;
                 }
             }
@@ -287,25 +253,46 @@ public class AntColonyOptimization {
                 }
             }
             throw new RuntimeException("There are no other cities");
+        }finally {
+            lock.unlock();
+        }
+    }
+
+    private synchronized double[] calculateProbabilities(Ant ant) {
+        int i = ant.getCurrentCity();
+        double pheromone = 0.0;
+        for (int j = 0; j < numberOfCities; j++) {
+            if (i == j) continue;
+            if (!ant.visited(j)) {
+                pheromone += Math.pow(trails[i][j], alpha) * Math.pow(1.0 / graph[i][j], beta);
+            }
         }
 
-        private void calculateProbabilities(Ant ant) {
-            int i = ant.getCurrentCity();
-            double pheromone = 0.0;
-            for (int j = 0; j < numberOfCities; j++) {
-                if (i == j) continue;
-                if (!ant.visited(j)) {
-                    pheromone += Math.pow(trails[i][j], alpha) * Math.pow(1.0 / graph[i][j], beta);
-                }
-            }
-            for (int j = 0; j < numberOfCities; j++) {
-                if (ant.visited(j) || j == i) {
-                    localProbabilities[j] = 0.0;
-                } else {
-                    double numerator = Math.pow(trails[i][j], alpha) * Math.pow(1.0 / graph[i][j], beta);
-                    localProbabilities[j] = numerator / pheromone;
+        double[] probabilities = new double[numberOfCities];
+        for (int j = 0; j < numberOfCities; j++) {
+            if (ant.visited(j) || j == i) {
+                probabilities[j] = 0.0;
+            } else {
+                double numerator = Math.pow(trails[i][j], alpha) * Math.pow(1.0 / graph[i][j], beta);
+                probabilities[j] = numerator / pheromone;
 
-                }
+            }
+        }
+        return probabilities;
+    }
+
+    private class AntWorker implements Runnable {
+        private final Ant ant;
+
+        public AntWorker(Ant ant) {
+            this.ant = ant;
+        }
+
+        @Override
+        public void run() {
+            for (int i = 0; i < numberOfCities - 1; i++) {
+                int nextCity = selectNextCity(ant);
+                ant.visitCity(nextCity);
             }
         }
     }
