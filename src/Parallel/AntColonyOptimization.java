@@ -38,11 +38,11 @@ public class AntColonyOptimization {
     private int numberOfThreads = 2; // default min value
     private final ReentrantLock lock = new ReentrantLock();
 
-    public AntColonyOptimization(int noOfCities) {
-        initializeParams(noOfCities);
+    public AntColonyOptimization(int noOfCities, int minDistance, int maxDistance) {
+        initializeParams(noOfCities, minDistance, maxDistance);
     }
 
-    AntColonyOptimization(double tr, double al, double be, double ev, int q, double af, double rf, int iter, int noOfCities) {
+    AntColonyOptimization(double tr, double al, double be, double ev, int q, double af, double rf, int iter, int noOfCities, int minDistance, int maxDistance) {
         c = tr;
         alpha = al;
         beta = be;
@@ -50,12 +50,11 @@ public class AntColonyOptimization {
         Q = q;
         randomFactor = rf;
         maxIterations = iter;
-        initializeParams(noOfCities);
-
+        initializeParams(noOfCities, minDistance, maxDistance);
     }
 
-    private void initializeParams(int noOfCities) {
-        graph = generateRandomCity(noOfCities);
+    private void initializeParams(int noOfCities, int minDistance, int maxDistance) {
+        graph = generateRandomCity(noOfCities, minDistance, maxDistance);
         this.numberOfCities = noOfCities;
         trails = new double[noOfCities][noOfCities];
         numberOfAnts = noOfCities ;
@@ -67,10 +66,8 @@ public class AntColonyOptimization {
     private void solve()  {
         resetAnts();
         clearTrails();
-        int barrierParties = numberOfThreads;
 
         // create tasks
-//        CyclicBarrier barrier = new CyclicBarrier(numberOfAnts, updateTrailsAndBest());
         List<AntWorker> tasks = createTasks();
 
         // create ES
@@ -101,8 +98,8 @@ public class AntColonyOptimization {
         // shutdown
         shutdownAndAwaitTermination(executorService);
 
-//        System.out.println("\nBest tour length: " + bestTourLength);
-//        System.out.println("\nBest tour order: " + Arrays.toString(bestTourOrder));
+//        System.out.println("Best tour length: " + bestTourLength);
+//        System.out.println("Best tour order: " + Arrays.toString(bestTourOrder));
     }
 
     private List<AntWorker> createTasks() {
@@ -112,13 +109,6 @@ public class AntColonyOptimization {
         }
 
         return tasks;
-    }
-
-    private Runnable updateTrailsAndBest(){
-        return () -> {
-            updateTrails();
-            updateBest();
-        };
     }
 
     private void shutdownAndAwaitTermination(ExecutorService executorService) {
@@ -139,11 +129,11 @@ public class AntColonyOptimization {
     public void startAntOptimization() {
         int attempts = 5;
         for (int i = 0; i < attempts; i++) {
-//            System.out.println("Attempt #" + (i+1));
+//            System.out.println("\nAttempt #" + (i+1));
             solve();
 
         }
-        System.out.print("\nLength: " + bestTourLength + " Naive Solution: " + IntStream.of(graph[0]).sum() + " ");
+//        System.out.print("\nLength: " + bestTourLength + " Naive Solution: " + IntStream.of(graph[0]).sum() + " ");
     }
 
     private void clearTrails() {
@@ -203,15 +193,14 @@ public class AntColonyOptimization {
         this.numberOfThreads = nThreads;
     }
 
-    private int[][] generateRandomCity(int numberOfCities) {
+    private int[][] generateRandomCity(int numberOfCities, int minDistance, int maxDistance) {
         Random random = new Random();
-        int maxDistanceBetweenCities = 100;
         int[][] randomCity = new int[numberOfCities][numberOfCities];
 
         for (int i = 0; i < numberOfCities; i++) {
             for (int j = 0; j < numberOfCities; j++) {
                 if (i == j) randomCity[i][j] = 0;
-                else randomCity[i][j] = random.nextInt(maxDistanceBetweenCities) + 1;
+                else randomCity[i][j] = random.nextInt(maxDistance - minDistance + 1) + minDistance;
             }
         }
         return randomCity;
@@ -223,6 +212,7 @@ public class AntColonyOptimization {
 
     private  int selectNextCity(Ant ant) {
         Random localRandom = new Random();
+
         if (localRandom.nextDouble() < randomFactor) {
             List<Integer> notVisitedCities = new ArrayList<>();
             for (int i = 0; i < numberOfCities; i++) {

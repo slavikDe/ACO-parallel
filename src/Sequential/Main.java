@@ -5,12 +5,13 @@ import java.util.Arrays;
 import java.util.stream.LongStream;
 
 public class Main {
-
     public static void main(String[] args) {
-        manualTesting(6);
+        int numCities = 4;
+        seqBenchmark();
     }
 
     public static void manualTesting(int noOfCities) {
+        int minDistance = 20, maxDistance = 100;
 
         int[][] graph = new int[][]{
                 // Mumbai, Delhi, Bengaluru, Chennai
@@ -20,7 +21,7 @@ public class Main {
                 {1330,   2200,     350,        0 }  // Chennai
         };
 
-        AntColonyOptimization aco = new AntColonyOptimization(4);
+        AntColonyOptimization aco = new AntColonyOptimization(noOfCities, minDistance, maxDistance);
         aco.setGraph(graph);
         int naive = aco.naiveSolution();
         aco.prettyPrint();
@@ -32,24 +33,28 @@ public class Main {
     }
 
     public static void seqBenchmark() {
+        int minDistance = 20, maxDistance = 100;
         int [] citySizes = {50, 75, 100, 150, 200};
         int cycles = 5;
 
-        long[] results = new long[cycles ];
+        long[] results = new long[cycles];
 
         System.out.println("Start time:" + LocalDateTime.now());
-        System.out.println("Sequential with \n cities: " + Arrays.toString(citySizes));
+        System.out.print("Sequential with \n cities: " + Arrays.toString(citySizes) +'\n');
         for(int noOfCities : citySizes){
            for (int i = 0; i < cycles; i++) {
-               AntColonyOptimization aco = new AntColonyOptimization(noOfCities);
+               AntColonyOptimization aco =  new AntColonyOptimization(noOfCities, minDistance, maxDistance);
 
                long startTime = System.currentTimeMillis();
                aco.startAntOptimization();
                long endTime = System.currentTimeMillis();
-               long result = endTime - startTime;
+               long elapsedTime = endTime - startTime;
 
-               results[i] = result;
-               System.out.println("Global time: " + result + " ms");
+               if (i > 0){
+                   results[i - 1] = elapsedTime;
+                   System.out.print("\n- Global time: " + elapsedTime + " ms");
+               }
+               else System.out.print("- Warm up");
            }
 
            System.out.printf("Cities: %d, avg Time: %d, cycles: 20, %n", noOfCities, LongStream.of(results).sum() / cycles );

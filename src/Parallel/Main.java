@@ -6,14 +6,15 @@ import java.util.stream.LongStream;
 
 public class Main {
     public static void main(String[] args) {
-        manualTesting(100);
+        int numCities = 100;
+        parallelBenchmark();
     }
 
     public static void manualTesting(int noOfCities) {
-
-        AntColonyOptimization aco = new AntColonyOptimization(noOfCities);
+        int minDistance = 20, maxDistance = 100;
+        AntColonyOptimization aco = new AntColonyOptimization(noOfCities, minDistance, maxDistance);
         int naive = aco.naiveSolution();
-        aco.prettyPrint();
+//        aco.prettyPrint();
         long startTime = System.currentTimeMillis();
         aco.startAntOptimization();
 
@@ -22,28 +23,29 @@ public class Main {
     }
 
     public static void parallelBenchmark() {
-        int threadsCount = 20;
+        int threadsCount = 12;
+//        int [] citySizes = {50, 75, 100, 150, 200};
+        int[] citySizes = {150};
+        int minDistance = 20, maxDistance = 100;
 
-        int [] citySizes = {50, 75, 100, 150, 200};
-
-        int cycles = 20;
+        int cycles = 5;
 
         long[] results = new long[cycles];
         System.out.println("Start time: " + LocalDateTime.now());
         System.out.print("Parallel with \n cities: " + Arrays.toString(citySizes) +'\n');
         for (int noOfCities : citySizes) {
             for (int i = 0; i < cycles; i++) {
-                AntColonyOptimization aco = new AntColonyOptimization(noOfCities);
+                AntColonyOptimization aco = new AntColonyOptimization(noOfCities, minDistance, maxDistance);
                 aco.setThreads(threadsCount);
 
                 long startTime = System.currentTimeMillis();
                 aco.startAntOptimization();
                 long endTime = System.currentTimeMillis();
-                long result = endTime - startTime;
+                long elapsedTime = endTime - startTime;
 
                 if (i > 0){
-                    results[i - 1] = result;
-                    System.out.print("\n- Global time: " + result + " ms");
+                    results[i - 1] = elapsedTime;
+                    System.out.print("\n- Global time: " + elapsedTime + " ms");
                 }
                 else System.out.print("- Warm up");
 

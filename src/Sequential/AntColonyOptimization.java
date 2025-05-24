@@ -25,7 +25,7 @@ public class AntColonyOptimization {
     private double evaporation = 0.5;
     private double Q = 100.0 * 5;
     private double randomFactor = 0.01;
-    private int maxIterations = 30;
+    private int maxIterations = 300;
 
     private int noOfCities;
     private int[][] graph;
@@ -38,22 +38,22 @@ public class AntColonyOptimization {
     private int[] bestTourOrder;
     private double bestTourLength;
 
-    public AntColonyOptimization(int noOfCities) {
-        initializeParams(noOfCities);
+    public AntColonyOptimization(int noOfCities, int minDistance, int maxDistance) {
+        initializeParams(noOfCities, minDistance, maxDistance);
     }
 
-    AntColonyOptimization(double al, double be, double ev, int q, double rf, int iter, int noOfCities) {
+    AntColonyOptimization(double al, double be, double ev, int q, double rf, int iter, int noOfCities, int minDistance, int maxDistance) {
         alpha = al;
         beta = be;
         evaporation = ev;
         Q = q;
         randomFactor = rf;
         maxIterations = iter;
-        initializeParams(noOfCities);
+        initializeParams(noOfCities, minDistance, maxDistance);
     }
 
-    private void initializeParams(int noOfCities) {
-        graph = generateRandomCity(noOfCities);
+    private void initializeParams(int noOfCities, int minDistance, int maxDistance) {
+        graph = generateRandomCity(noOfCities, minDistance, maxDistance);
         this.noOfCities = noOfCities;
         int numberOfAnts = noOfCities;
         ants = new ArrayList<>(numberOfAnts);
@@ -63,14 +63,13 @@ public class AntColonyOptimization {
             ants.add(new Ant(noOfCities));
     }
 
-    private int[][] generateRandomCity(int numberOfCities) {
-        int maxDistanceBetweenCities = 100;
+    private int[][] generateRandomCity(int numberOfCities, int minDistance, int maxDistance) {
         int[][] randomCity = new int[numberOfCities][numberOfCities];
 
         for (int i = 0; i < numberOfCities; i++) {
             for (int j = 0; j < numberOfCities; j++) {
                 if (i == j) randomCity[i][j] = 0;
-                else randomCity[i][j] = random.nextInt(maxDistanceBetweenCities) + 1;
+                else randomCity[i][j] = random.nextInt(maxDistance - minDistance + 1) + minDistance;
             }
         }
         return randomCity;
@@ -80,13 +79,12 @@ public class AntColonyOptimization {
         int attempts = 5;
 
         for (int i = 0; i < attempts; i++) {
-            System.out.println("Ant optimization attempt #" + (i + 1));
+//            System.out.println("\nAttempt #" + (i+1));
             solve();
-//            System.out.println("Attempt #" + (i + 1) + " result: " + bestTourLength);
 //            System.out.println("Best Tour Order: " + Arrays.toString(bestTourOrder) + "\n");
         }
 
-        System.out.print("Length: " + bestTourLength + " Naive Solution: " + IntStream.of(graph[0]).sum() + " ");
+//        System.out.print("Length: " + bestTourLength + " Naive Solution: " + IntStream.of(graph[0]).sum() + " ");
     }
 
     private void solve() {
@@ -104,10 +102,12 @@ public class AntColonyOptimization {
             updateTrails();
             updateBest();
             if(i % 10 == 0){
-                System.out.println("Best tour length: " + bestTourLength);
-                System.out.println("Best tour order: " + Arrays.toString(bestTourOrder) + '\n');
+
             }
         }
+
+//        System.out.println("Best tour length: " + bestTourLength);
+//        System.out.println("Best tour order: " + Arrays.toString(bestTourOrder) + '\n');
     }
 
     private void resetAnts() {
