@@ -8,7 +8,7 @@ import java.util.stream.IntStream;
 public class AntColonyOptimization {
     /*
      * default
-     * private double c = 1.0;             //number of trails
+     * private double c = 1.0;
      * private double alpha = 1;           //pheromone importance
      * private double beta = 5;            //distance priority
      * private double evaporation = 0.5;
@@ -18,14 +18,14 @@ public class AntColonyOptimization {
      * private int maxIterations = 1000;
      */
 
-//    public final Random random = new Random();
+//    public final Random globalRandom = new Random(1464849039161L);
     private double c = 1.0;
     private double alpha = 1;
     private double beta = 5;
     private double evaporation = 0.5;
     private double Q = 100.0 * 5;
-    private double randomFactor = 0.01;
-    private int maxIterations = 300;
+    private double randomFactor = 0.1;
+    private int maxIterations = 200;
     private int numberOfAnts;
     private int numberOfCities;
     private int[][] graph;
@@ -36,7 +36,7 @@ public class AntColonyOptimization {
     private double bestTourLength ;
 
     private int numberOfThreads = 2; // default min value
-    private final ReentrantLock lock = new ReentrantLock();
+    CountDownLatch countDownLatch;
 
     public AntColonyOptimization(int noOfCities, int minDistance, int maxDistance) {
         initializeParams(noOfCities, minDistance, maxDistance);
@@ -72,34 +72,38 @@ public class AntColonyOptimization {
 
         // create ES
         ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);
-
+        List<Future<?>> futures = null;
         // load tasks
         for(int iteration = 0; iteration < maxIterations; iteration++) {
-            List<Future<?>> futures = new ArrayList<>();
+            countDownLatch = new CountDownLatch(numberOfAnts);
+            futures = new ArrayList<>(numberOfAnts);
             for(AntWorker task : tasks) {
                futures.add(executorService.submit(task));
             }
 
-            for (Future<?> future : futures) {
-                try {
+            try{
+                for(Future<?> future : futures) {
                     future.get();
-                } catch (InterruptedException | ExecutionException e) {
-                    e.printStackTrace();
                 }
+            }catch (InterruptedException | ExecutionException _) {}
+
+            try {
+                countDownLatch.await();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("Interrupted while waiting for ants to finish", e);
             }
+
             updateTrails();
             updateBest();
-
-            if (iteration < maxIterations - 1) {
-                resetAnts();
-            }
+            if (iteration < maxIterations - 1) resetAnts();
        }
 
         // shutdown
         shutdownAndAwaitTermination(executorService);
 
-//        System.out.println("Best tour length: " + bestTourLength);
-//        System.out.println("Best tour order: " + Arrays.toString(bestTourOrder));
+        System.out.println("Best tour length: " + bestTourLength);
+        System.out.println("Best tour order: " + Arrays.toString(bestTourOrder));
     }
 
     private List<AntWorker> createTasks() {
@@ -127,9 +131,9 @@ public class AntColonyOptimization {
     }
 
     public void startAntOptimization() {
-        int attempts = 5;
+        int attempts = 20;
         for (int i = 0; i < attempts; i++) {
-//            System.out.println("\nAttempt #" + (i+1));
+            System.out.println("\nAttempt #" + (i+1));
             solve();
 
         }
@@ -226,8 +230,8 @@ public class AntColonyOptimization {
             }
         }
 
-        lock.lock();
-        try {
+//        lock.lock();
+//        try {
             double[] probabilities = calculateProbabilities(ant);
             double randomValue = localRandom.nextDouble();
             double total = 0;
@@ -244,12 +248,12 @@ public class AntColonyOptimization {
                 }
             }
             throw new RuntimeException("There are no other cities");
-        }finally {
-            lock.unlock();
-        }
+//        }finally {
+//            lock.unlock();
+//        }
     }
 
-    private synchronized double[] calculateProbabilities(Ant ant) {
+    private double[] calculateProbabilities(Ant ant) {
         int i = ant.getCurrentCity();
         double pheromone = 0.0;
         for (int j = 0; j < numberOfCities; j++) {
@@ -285,6 +289,9 @@ public class AntColonyOptimization {
                 int nextCity = selectNextCity(ant);
                 ant.visitCity(nextCity);
             }
+
+            countDownLatch.countDown();
+
         }
     }
 }

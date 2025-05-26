@@ -24,8 +24,8 @@ public class AntColonyOptimization {
     private double beta = 5;
     private double evaporation = 0.5;
     private double Q = 100.0 * 5;
-    private double randomFactor = 0.01;
-    private int maxIterations = 300;
+    private double randomFactor = 0.1;
+    private int maxIterations = 200;
 
     private int noOfCities;
     private int[][] graph;
@@ -76,10 +76,10 @@ public class AntColonyOptimization {
     }
 
     public void startAntOptimization() {
-        int attempts = 5;
+        int attempts = 20;
 
         for (int i = 0; i < attempts; i++) {
-//            System.out.println("\nAttempt #" + (i+1));
+            System.out.println("\nAttempt #" + (i+1));
             solve();
 //            System.out.println("Best Tour Order: " + Arrays.toString(bestTourOrder) + "\n");
         }
@@ -101,13 +101,10 @@ public class AntColonyOptimization {
             moveAnts();
             updateTrails();
             updateBest();
-            if(i % 10 == 0){
-
-            }
         }
 
-//        System.out.println("Best tour length: " + bestTourLength);
-//        System.out.println("Best tour order: " + Arrays.toString(bestTourOrder) + '\n');
+        System.out.println("Best tour length: " + bestTourLength);
+        System.out.println("Best tour order: " + Arrays.toString(bestTourOrder) + '\n');
     }
 
     private void resetAnts() {

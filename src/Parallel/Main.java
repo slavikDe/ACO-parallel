@@ -7,14 +7,15 @@ import java.util.stream.LongStream;
 public class Main {
     public static void main(String[] args) {
         int numCities = 100;
-        parallelBenchmark();
+        manualTesting(numCities);
     }
 
     public static void manualTesting(int noOfCities) {
         int minDistance = 20, maxDistance = 100;
         AntColonyOptimization aco = new AntColonyOptimization(noOfCities, minDistance, maxDistance);
         int naive = aco.naiveSolution();
-//        aco.prettyPrint();
+        aco.prettyPrint();
+        aco.setThreads(12);
         long startTime = System.currentTimeMillis();
         aco.startAntOptimization();
 
@@ -23,12 +24,11 @@ public class Main {
     }
 
     public static void parallelBenchmark() {
-        int threadsCount = 12;
-//        int [] citySizes = {50, 75, 100, 150, 200};
-        int[] citySizes = {150};
+        int threadsCount = 16;
+        int [] citySizes = {50, 75, 100, 150, 200};
         int minDistance = 20, maxDistance = 100;
 
-        int cycles = 5;
+        int cycles = 20;
 
         long[] results = new long[cycles];
         System.out.println("Start time: " + LocalDateTime.now());

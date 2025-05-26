@@ -6,23 +6,22 @@ import java.util.stream.LongStream;
 
 public class Main {
     public static void main(String[] args) {
-        int numCities = 4;
-        seqBenchmark();
+        int numCities = 100;
+        manualTesting(numCities);
     }
 
     public static void manualTesting(int noOfCities) {
         int minDistance = 20, maxDistance = 100;
-
-        int[][] graph = new int[][]{
-                // Mumbai, Delhi, Bengaluru, Chennai
-                {   0,   1400,     980,     1330 }, // Mumbai
-                {1400,      0,    2150,     2200 }, // Delhi
-                { 980,   2150,       0,      350 }, // Bengaluru
-                {1330,   2200,     350,        0 }  // Chennai
-        };
+//        int[][] graph = new int[][]{
+//                // Mumbai, Delhi, Bengaluru, Chennai
+//                {   0,   1400,     980,     1330 }, // Mumbai
+//                {1400,      0,    2150,     2200 }, // Delhi
+//                { 980,   2150,       0,      350 }, // Bengaluru
+//                {1330,   2200,     350,        0 }  // Chennai
+//        };
 
         AntColonyOptimization aco = new AntColonyOptimization(noOfCities, minDistance, maxDistance);
-        aco.setGraph(graph);
+//        aco.setGraph(graph);
         int naive = aco.naiveSolution();
         aco.prettyPrint();
         long startTime = System.currentTimeMillis();
